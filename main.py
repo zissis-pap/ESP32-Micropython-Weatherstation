@@ -5,14 +5,16 @@ from machine import Pin
 import network
 import time
 import neopixel
-import mrequests as requests
 from webserver import WebServer
 import json
 import gc
-from app_keys import WIFI_SSID, WIFI_PASSWORD, NEWSAPI_KEY, OPENWEATHERMAP_KEY
+from app_keys import WIFI_SSID, WIFI_PASSWORD, OPENWEATHERMAP_KEY
+from newsapi import print_news
+from openweathermapapi import print_weather_information
 
-SYSTEM_VERSION = "24-11-07 - RL0.01.0"
+SYSTEM_VERSION = "24-11-07 - RL0.02.0"
 
+wifi = network.WLAN(network.STA_IF)
 RGB = neopixel.NeoPixel(machine.Pin(48), 1)
 # Set RGB LED
 R_old = 0
@@ -33,7 +35,6 @@ def ControlRGBLED(R=None, G=None, B=None):
 
 # Connect to Wi-Fi
 def connect_to_wifi():
-    wifi = network.WLAN(network.STA_IF)
     wifi.active(True)
     if not wifi.isconnected():
         print("Connecting to Wi-Fi...")
@@ -57,37 +58,8 @@ def PrintAvailableFlash():
     print("Total Flash Size: {:.2f} MB".format(total_flash_size_mb))
     print("Available Flash Size: {:.2f} MB".format(available_flash_size_mb))
 
-
-# Fetch news data
-def fetch_news():
-    url = f"https://newsapi.org/v2/top-headlines?country=us&apiKey={NEWSAPI_KEY}"
-    try:
-        response = requests.get(url,headers={"User-Agent": "Zissis"})
-        if response.status_code == 200:
-            news_data = response.json()
-            response.close()
-            return news_data.get("articles", [])
-        else:
-            print("Failed to fetch news:", response.status_code)
-            return []
-    except Exception as e:
-        print("Error fetching news:", e)
-        return []
-
-# Print news to serial
-def print_news():
-    ControlRGBLED(G=64)
-    articles = fetch_news()
-    print("\nLatest News Headlines:\n")
-    for i, article in enumerate(articles[:5]):  # Limit to 5 headlines for simplicity
-        title = article.get("title", "No title")
-        description = article.get("description", "No description")
-        print(f"{i + 1}. {title}\n   {description}\n")
-    ControlRGBLED(G=0)
-
-def print_available_RAM():
-    print("RAM available:", gc.mem_free()/1024/1024, "MB")
-    
+def PrintAvailableRAM():
+    print("RAM available:", gc.mem_free()/1024/1024, "MB")   
     
 # Main program
 def main():
@@ -95,15 +67,17 @@ def main():
     PrintAvailableFlash()
     connect_to_wifi()
     while True:
-        print_available_RAM()
+        PrintAvailableRAM()
         print_news()
+        print_weather_information()
         time.sleep(600)  # Fetch news every 10 minutes
 
 def task_core1():
     while True:
-        time.sleep(5)  # Wait 5 seconds to start the server - should wait for connection
-        print("Core 1 started")
-        WebServer()
+        if wifi.isconnected(): # start webserver only when wifi connection is available
+            print("Core 1 started")
+            WebServer()
+        time.sleep(1)
 
 def task_core0():
     while True:
@@ -115,4 +89,3 @@ _thread.start_new_thread(task_core1, ())
 
 # Run the main task on the main core
 task_core0()
-
