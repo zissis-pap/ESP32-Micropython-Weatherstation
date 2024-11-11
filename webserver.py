@@ -1,6 +1,9 @@
 import socket
+import re
 from webpage import web_page
-from openweathermapapi import print_weather_information
+from openweathermapapi import PrintWeatherInformation
+
+city = 'London'
 
 def WebServer():
     # Set up and open a socket
@@ -15,12 +18,16 @@ def WebServer():
         
         # Socket receive()
         request = conn.recv(1024)
-        print('Request:', request)
-
+        #print('Request:', request)
+        request = request.decode()
         # Handle different paths
-        if '/weather' in request.decode():  # AJAX request for counter value
-            response = print_weather_information()  # Get the updated weather data
-
+        if '/weather' in request:  # AJAX request for weather data
+            match = re.search(r'city:(\w+)', request)
+            if match:
+                city = match.group(1)
+                print(city)
+            response = PrintWeatherInformation(city)  # Get the updated weather data
+            print(response)
         else:  # Serve the main HTML page
             response = web_page()
             
@@ -31,4 +38,3 @@ def WebServer():
         
         # Socket close()
         conn.close()
-

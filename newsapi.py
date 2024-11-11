@@ -27,3 +27,4 @@ def print_news():
         print(f"{i + 1}. {title}\n   {description}\n")
 
 
+

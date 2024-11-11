@@ -4,18 +4,18 @@ import machine
 from machine import Pin
 import network
 import time
+import ntptime
 import neopixel
 from webserver import WebServer
 import json
 import gc
-from app_keys import WIFI_SSID, WIFI_PASSWORD, OPENWEATHERMAP_KEY
+from app_keys import WIFI_SSID, WIFI_PASSWORD
 from newsapi import print_news
-from openweathermapapi import print_weather_information
 
-SYSTEM_VERSION = "24-11-07 - RL0.02.0"
+SYSTEM_VERSION = "24-11-08 - RL0.02.1"
 
 wifi = network.WLAN(network.STA_IF)
-RGB = neopixel.NeoPixel(machine.Pin(48), 1)
+RGB = neopixel.NeoPixel(machine.Pin(8), 1)
 # Set RGB LED
 R_old = 0
 G_old = 0
@@ -44,6 +44,7 @@ def connect_to_wifi():
             time.sleep(1)
             ControlRGBLED(B=64)
     print("Connected to Wi-Fi:", wifi.ifconfig())
+    ntptime.settime()
     ControlRGBLED(B=64)
 
 def PrintAvailableFlash():
@@ -65,12 +66,10 @@ def PrintAvailableRAM():
 def main():
     print("SYSTEM VERSION", SYSTEM_VERSION)
     PrintAvailableFlash()
-    connect_to_wifi()
     while True:
+        connect_to_wifi()
         PrintAvailableRAM()
-        print_news()
-        print_weather_information()
-        time.sleep(600)  # Fetch news every 10 minutes
+        time.sleep(60)  # check wifi connectivity every minute
 
 def task_core1():
     while True:
