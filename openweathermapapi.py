@@ -1,4 +1,5 @@
 import mrequests as requests
+import re
 from app_keys import OPENWEATHERMAP_KEY
 from geocodeapi import GetLocationCoordinates
 
@@ -27,7 +28,9 @@ def PrintWeatherInformation(city):
     humidity = information['main']['humidity']
     #pressure = information['main']['pressure']
     wind = information['wind']['speed']
+    city = city.replace("%20", " ")  # Replace %20 with a space
 #     print(f"\nLatest Weather Information for: {city}")
 #     print(f"Weather: {weather} with {weather_information}")
 #     print(f"Temperature: {temperature}C | Humidity: {humidity}% | Wind: {wind}\n")
     return city + "|" + str(temperature) + "|" + weather_information + "|" + str(humidity) + "|" + str(wind) + "|" + location['longt'] + "|" + location['latt']
+

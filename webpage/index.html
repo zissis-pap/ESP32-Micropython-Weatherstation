@@ -178,7 +178,7 @@
 
         <!-- Chart Card Structure -->
         <div class="card chart-card">
-            <h2>Temperature & Humidity Chart</h2>
+            <h2>Weather Chart</h2>
             <div class="chart-container">
                 <canvas id="weatherChart"></canvas>
             </div>
@@ -189,6 +189,7 @@
     <script>
         let lat = 0, lon = 0;
         let map, marker;  // Leaflet map and marker variables
+        let chart, weatherData = [];
         var ajaxRequest = new XMLHttpRequest();
         async function ajaxLoad(ajaxURL)
         {     
@@ -241,8 +242,55 @@
                 marker.setLatLng([lat, lon]); // Update marker position
             }
         }
+        
+        function setupChart() {
+            const ctx = document.getElementById('weatherChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Temperature (°C)',
+                            borderColor: '#FF6384',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            data: []
+                        },
+                        {
+                            label: 'Humidity (%)',
+                            borderColor: '#36A2EB',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            data: []
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: { title: { display: true, text: 'Time' } },
+                        y: { beginAtZero: false, title: { display: true, text: 'Value' } }
+                    }
+                }
+            });
+        }
+
+        function updateChart(temp, humidity) {
+            const currentTime = new Date().toLocaleTimeString();
+            chart.data.labels.push(currentTime);
+            chart.data.datasets[0].data.push(temp);
+            chart.data.datasets[1].data.push(humidity);
+
+            // Limit the data points on the chart to the last 10 readings
+            if (chart.data.labels.length > 10) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+                chart.data.datasets[1].data.shift();
+            }
+
+            chart.update();
+        }
 	    window.onload = updateWeather;
         setInterval(updateWeather, 60000);
+        setupChart();
     </script>
 </body>
 </html>

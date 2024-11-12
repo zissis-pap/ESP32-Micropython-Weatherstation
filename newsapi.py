@@ -26,5 +26,3 @@ def print_news():
         description = article.get("description", "No description")
         print(f"{i + 1}. {title}\n   {description}\n")
 
-
-

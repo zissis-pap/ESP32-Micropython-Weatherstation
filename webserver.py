@@ -18,11 +18,11 @@ def WebServer():
         
         # Socket receive()
         request = conn.recv(1024)
-        #print('Request:', request)
-        request = request.decode()
+        request = request.decode('utf-8')
+        print('Request:', request)
         # Handle different paths
         if '/weather' in request:  # AJAX request for weather data
-            match = re.search(r'city:(\w+)', request)
+            match = re.search(r'city:([%\w]+)', request)
             if match:
                 city = match.group(1)
                 print(city)
@@ -38,3 +38,4 @@ def WebServer():
         
         # Socket close()
         conn.close()
+

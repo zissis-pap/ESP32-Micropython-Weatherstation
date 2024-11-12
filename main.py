@@ -12,10 +12,11 @@ import gc
 from app_keys import WIFI_SSID, WIFI_PASSWORD
 from newsapi import print_news
 
-SYSTEM_VERSION = "24-11-08 - RL0.02.1"
+SYSTEM_VERSION = "24-11-11 - RL0.03.1"
 
 wifi = network.WLAN(network.STA_IF)
 RGB = neopixel.NeoPixel(machine.Pin(8), 1)
+
 # Set RGB LED
 R_old = 0
 G_old = 0
@@ -73,18 +74,20 @@ def main():
 
 def task_core1():
     while True:
+        
         if wifi.isconnected(): # start webserver only when wifi connection is available
-            print("Core 1 started")
+            print("Task 1 started")
             WebServer()
         time.sleep(1)
 
 def task_core0():
     while True:
-        print("Core 0 started")
+        print("Task 0 started")
         main()
 
-# Start the second task in a separate thread, which will run on the second core
+# Start the second task in a separate thread
 _thread.start_new_thread(task_core1, ())
 
-# Run the main task on the main core
+# Run the main task
 task_core0()
+
